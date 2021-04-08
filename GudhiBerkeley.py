@@ -5,6 +5,7 @@ Created on March 20th
 @author: cnem modified Neils original code
 
 """
+
 import os
 
 #import pandas as pd
@@ -110,15 +111,10 @@ path = r"/home/team3/Documents/imageSegmentation/BSDS300-images/BSDS300/images/t
 
 ID ="310007"
 
-import os
 
-import matplotlib.pyplot as plt
+results_dir = os.path.dirname(__file__)
 
-
-
-script_dir = os.path.dirname(__file__)
-
-results_dir = os.path.join(script_dir, ID + 'Betticurves/')
+results_dir = os.path.join(results_dir, ID + 'Betticurves/')
 
 if not os.path.isdir(results_dir):
 
@@ -194,7 +190,7 @@ while y+w <= m:
     print("This is the window:",fraction_image)
     print("This is the window size:", fraction_image.shape)
 
-    '''#uncomment this if you want to see the window images sliding
+    ''' #uncomment this if you want to see the window images sliding
     plt.imshow(fraction_image)
     plt.show()
     '''

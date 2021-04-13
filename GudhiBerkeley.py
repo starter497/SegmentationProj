@@ -173,7 +173,7 @@ start = time.time()
 '''This will iterate the pixels
 to make our windows slide depending on increments
 '''
-
+j=0 #iteration
 
 BettiArrays = []
 
@@ -209,6 +209,9 @@ while y+w <= m:
     plt.savefig(results_dir + "ID:" + ID +" x_"+str(x) + "y_" + str(y)+".png")
     print("betticurvearray:", dgm0)
     '''
+
+    np.save(results_dir + ID + "x_" +str(x) + "y_" + str(y) +".np", dgm0)
+
     y = y+s
     if y+w > m :
         y=0
@@ -216,8 +219,8 @@ while y+w <= m:
     if x+h >= n:
 
         break
-     
-
+    print("iteration count:", j)     
+    j =j+1
 
     
     
@@ -226,6 +229,9 @@ while y+w <= m:
 
 
 end = time.time()
+
+np.savez("BettiArrays", BettiArrays)
+
 
 print("Time elapsed:", end-start)
 print("size of All Betti DATA:",len(BettiArrays))

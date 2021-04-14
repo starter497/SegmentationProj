@@ -28,6 +28,8 @@ import warnings
 
 from sklearn.cluster import KMeans
 
+from sklearn.cluster import SpectralClustering
+
 warnings.filterwarnings("ignore")
 
 usetex = matplotlib.checkdep_usetex(True) #I dont have latex)
@@ -159,13 +161,17 @@ n,m = im.shape
 
 h = 20 #height    
 w = 20 #width
-s = 5 #slide
+s = 3 #slide
 
 x_1 = np.linspace(0,255,num=256)
 #initializing plot 
 
 
 start = time.time()
+
+CL =np.load("clusteringlabels.npz")
+CL = CL.f.arr_0  #turns dictionary to readable array
+
 
 
 #------------------------ Post Processing/ plotting -------------------------------
@@ -176,7 +182,6 @@ to make our windows slide depending on increments
 j=0 #iteration
 
 BettiArrays = []
-
 while y+w <= m:
 
 
@@ -196,7 +201,7 @@ while y+w <= m:
     '''
 
     D0 = pc.Diagram(Dgm =Dgm0, globalmaxdeath = None, infinitedeath=None, inf_policy="keep")
-    dgm0 = D0.Betticurve(meshstart=0,meshstop=256,num_in_mesh=256)
+    dgm0 = D0.normalizedBetticurve(meshstart=0,meshstop=256,num_in_mesh=256)
 
     BettiArrays.append(dgm0) #creates a list of betti arrays
 
@@ -210,7 +215,7 @@ while y+w <= m:
     print("betticurvearray:", dgm0)
     '''
 
-    np.save(results_dir + ID + "x_" +str(x) + "y_" + str(y) +".np", dgm0)
+    #np.save(results_dir + ID + "x_" +str(x) + "y_" + str(y) , dgm0)
 
     y = y+s
     if y+w > m :
@@ -221,22 +226,49 @@ while y+w <= m:
         break
     print("iteration count:", j)     
     j =j+1
+    
+             
+    if CL[j] == 0:
 
-    
-    
-    
+        im[x,y] = 0
 
+    elif CL[j] == 1:
+
+        im[x,y] = 120
+    '''
+    elif CL[j] == 2:
+        
+        im[x,y] = 102
+
+    elif CL[j] == 3:
+        im[x,y] = 153
+
+    elif CL[j] == 4:
+        im[x,y] = 204
+
+    '''
+    
 
 
 end = time.time()
 
-np.savez("BettiArrays", BettiArrays)
+#np.savez("BettiArrays", BettiArrays)
+
+for i in range(n):
+    for j in range(m):
+        if im[i,j] != 0 and im[i,j] != 120: #and im[i,j] != 153 and im[i,j] != 102 and im[i,j] != 51: 
+            im[i,j] = 255
 
 
 print("Time elapsed:", end-start)
 print("size of All Betti DATA:",len(BettiArrays))
 
-clustering = KMeans(n_clusters=2,
- random_state=0).fit(BettiArrays)
+clustering = SpectralClustering(n_clusters=2,random_state=0,assign_labels="kmeans").fit(BettiArrays)
 
-print("Labels in BettiArrays:",clustering.labels_)
+
+#np.savez("clusteringlabels", clustering.labels_)
+
+plt.imshow(im,cmap="gray")
+plt.show()
+print(clustering.labels_)
+print(np.unique(clustering.labels_))

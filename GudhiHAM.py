@@ -146,7 +146,7 @@ x_1 = np.linspace(0,255,num=256)
 #initializing plot 
 
 
-start = time.time()
+
 
 
 
@@ -170,7 +170,7 @@ c9 = (0,51,102,100) #navyblue
 
 Arrays = []
 
-for k in range(100):
+for k in range(100-4):
 
     plt.clf()
 
@@ -190,7 +190,7 @@ for k in range(100):
 
 
     
-    ID = os.path.splitext(HAM_filenames[k])[0]
+    ID = os.path.splitext(HAM_filenames[k+4])[0]
 
     results_dir = os.path.dirname(__file__)
     results_dir = os.path.join(results_dir, ID + "-pc" )
@@ -199,16 +199,16 @@ for k in range(100):
 
 
     
-    '''
+    
     CL =np.load(r"/home/nem2/Documents/HAM/" + ID  + "-pc/clusteringlabels.npz")
     CL = CL.f.arr_0  #turns dictionary to readable array
-    '''
+    
 
 
 
 
 
-    IM = Image.open(path + HAM_filenames[k])  #want to store IM for later clustering
+    IM = Image.open(path + HAM_filenames[k+4])  #want to store IM for later clustering
     im = ImageOps.grayscale(IM)
     im = np.array(im)
     
@@ -222,11 +222,11 @@ for k in range(100):
     
     for p in range(n):
         for q in range(m):
-            colorimage[p,q] = c0 #turns all images to pure white for clear clustering
+            colorimage[p,q] = c0 #turns all images to black
 
 
 
-
+    
 
     #------------------------ Post Processing/ plotting -------------------------------
 
@@ -247,7 +247,11 @@ for k in range(100):
         pixel = x,y
 
         [Dgm0,Dgm1,fraction_image]= fractional_lifespancurve(im, h, w , pixel)
-    
+        
+        if Dgm1.size == 0:
+            Dgm1 = np.zeros((2,2))
+
+
         #print("This is the window:",fraction_image)
         #print("This is the window size:", fraction_image.shape)
 
@@ -255,7 +259,7 @@ for k in range(100):
         plt.imshow(fraction_image)
         plt.show()
         '''
-
+        print("Dgm1", Dgm1)
         D0 = pc.Diagram(Dgm =Dgm0, globalmaxdeath = None, infinitedeath=None, inf_policy="keep")
         D1 = pc.Diagram(Dgm = Dgm1, globalmaxdeath = None, infinitedeath= None, inf_policy="keep")
 
@@ -301,11 +305,11 @@ for k in range(100):
             break
 
 
-        print("iteration count:", i)     
+        #print("iteration count:", i)     
         i =i+1
 
            
-        '''                
+                        
         if CL[i] == 0:
 
             colorimage[x,y] = c5
@@ -313,7 +317,7 @@ for k in range(100):
         elif CL[i] == 1:
 
             colorimage[x,y] = c0
-        
+        '''
         elif CL[j] == 2:
         
             colorimage[x,y] = c2
@@ -327,12 +331,11 @@ for k in range(100):
         elif CL[j] == 5:
             colorimage[x,y] = c6
         '''
-    end = time.time()
-
+    
     
     np.savez(results_dir + "/Pcurves", Pcurves)
     
-    print("Time elapsed:", end-start)
+    
     print("size of All PC  DATA:",Pcurves)
 
 
@@ -348,9 +351,9 @@ for k in range(100):
     fig = plt.figure()    
     plt.imshow(colorimage)
     #plt.show()
-    #fig.savefig(results_dir + "/colorimage.png")
+    fig.savefig(results_dir + "/colorimage.png")
     
-
+    
     print(clustering.labels_)
     print(np.unique(clustering.labels_))
-
+    print("count:", k)

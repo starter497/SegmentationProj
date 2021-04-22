@@ -170,7 +170,7 @@ c9 = (0,51,102,100) #navyblue
 
 Arrays = []
 
-for k in range(100-4):
+for k in range(100):
 
     plt.clf()
 
@@ -190,7 +190,7 @@ for k in range(100-4):
 
 
     
-    ID = os.path.splitext(HAM_filenames[k+4])[0]
+    ID = os.path.splitext(HAM_filenames[k])[0]
 
     results_dir = os.path.dirname(__file__)
     results_dir = os.path.join(results_dir, ID + "-pc" )
@@ -203,26 +203,28 @@ for k in range(100-4):
     CL =np.load(r"/home/nem2/Documents/HAM/" + ID  + "-pc/clusteringlabels.npz")
     CL = CL.f.arr_0  #turns dictionary to readable array
     
+    
 
 
 
-
-
-    IM = Image.open(path + HAM_filenames[k+4])  #want to store IM for later clustering
+    IM = Image.open(path + HAM_filenames[k])  #want to store IM for later clustering
     im = ImageOps.grayscale(IM)
     im = np.array(im)
     
     n,m = im.shape
 
     
-    print("image shape:",im.shape)
+    #print("image shape:",im.shape)
     
-    IM = IM.convert("RGBA")
-    colorimage = np.array(IM)
+    IM = ImageOps.grayscale(IM)
+    IM = np.array(IM)
+
+    #IM = IM.convert("RGBA")
+    #colorimage = np.array(IM)
     
     for p in range(n):
         for q in range(m):
-            colorimage[p,q] = c0 #turns all images to black
+            IM[p,q] = 0 #turns all images to black
 
 
 
@@ -241,8 +243,8 @@ for k in range(100-4):
     while y+w <= m:
 
 
-        print("x=:",x)
-        print("y=:",y)
+        #print("x=:",x)
+        #print("y=:",y)
 
         pixel = x,y
 
@@ -259,7 +261,10 @@ for k in range(100-4):
         plt.imshow(fraction_image)
         plt.show()
         '''
-        print("Dgm1", Dgm1)
+
+        #print("Dgm1", Dgm1)
+
+
         D0 = pc.Diagram(Dgm =Dgm0, globalmaxdeath = None, infinitedeath=None, inf_policy="keep")
         D1 = pc.Diagram(Dgm = Dgm1, globalmaxdeath = None, infinitedeath= None, inf_policy="keep")
 
@@ -279,8 +284,8 @@ for k in range(100-4):
         L1[np.any(np.isnan(L1)) == True] = 0
         L1[np.all(np.isfinite(L1)) == True] =0
         
-
-        PC = np.hstack((B0,G0,L0, B1,G1,L1)) 
+        
+        PC = np.hstack((G0,L0,G1,L1)) 
         Pcurves.append(PC)
 
         
@@ -309,14 +314,14 @@ for k in range(100-4):
         i =i+1
 
            
-                        
+                         
         if CL[i] == 0:
 
-            colorimage[x,y] = c5
+            IM[x,y] = 255
         
         elif CL[i] == 1:
 
-            colorimage[x,y] = c0
+            IM[x,y] = 0
         '''
         elif CL[j] == 2:
         
@@ -336,24 +341,25 @@ for k in range(100-4):
     np.savez(results_dir + "/Pcurves", Pcurves)
     
     
-    print("size of All PC  DATA:",Pcurves)
+    #print("size of All PC  DATA:",Pcurves)
 
 
-    clustering = KMeans(n_clusters=2,random_state=0).fit(Pcurves)
+    #clustering = KMeans(n_clusters=2,random_state=0).fit(Pcurves)
     
 
 
     #clustering = AgglomerativeClustering(n_clusters= None,distance_threshold = 1500).fit(BettiArrays)
 
-    np.savez( results_dir  + "/clusteringlabels", clustering.labels_)
+    #np.savez( results_dir  + "/clusteringlabels", clustering.labels_)
     
 
     fig = plt.figure()    
-    plt.imshow(colorimage)
+    plt.imshow(IM,cmap= 'gray')
     #plt.show()
-    fig.savefig(results_dir + "/colorimage.png")
+    fig.savefig(results_dir + "/colorimage_reverse.png")
     
+    np.savez(results_dir +"/PixelArray_reverse", IM)
     
-    print(clustering.labels_)
-    print(np.unique(clustering.labels_))
+    #print(clustering.labels_)
+    #print(np.unique(clustering.labels_))
     print("count:", k)

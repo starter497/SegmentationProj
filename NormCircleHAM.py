@@ -33,7 +33,7 @@ from sklearn.preprocessing import MinMaxScaler
 warnings.filterwarnings("ignore")
 
 usetex = matplotlib.checkdep_usetex(True) #I dont have latex)
-
+import time 
 # -------------------- README ----------------------
 '''
 
@@ -221,7 +221,7 @@ c1=(255,255,255,255) #white
 
 Arrays = []
 
-
+#start = time.time()
 for k in range(100):
 
     #plt.clf()
@@ -230,15 +230,15 @@ for k in range(100):
     PC = []
     Pcurves = []
 
-    x = 0
-    y = 0
+    x = 21
+    y = 21
     #x, y respectively or rows and column entry
     #height, width respectively
 
 
     h = 21 #height    
     w = 21 #width
-    s = 5 #stride
+    s = 3 #stride
 
 
     
@@ -272,11 +272,11 @@ for k in range(100):
     max_value = np.max(im)
 
     
-    new_min = -3 
+    new_min = -3
     new_max = 3
     
     im = ((im-min_value)*((new_max - new_min)/(max_value-min_value)))+(new_min)
-        #normalization values within [-3,3]
+        #normalization values within [0,1]
     
 
     '''
@@ -317,7 +317,7 @@ for k in range(100):
     row_count = 0
     column_count = 0
 
-    while y+w <= m: 
+    while y+w <= m-21: 
         
         #while our window is not comletely to the right of the image
 
@@ -332,8 +332,8 @@ for k in range(100):
        
         #This procedure only needs to be done once.
         #Afterwards feel free to comment it out
-                
-        '''
+        
+        '''            
         [Dgm0,Dgm1,fraction_image]= fractional_lifespancurve(im, h, w , pixel)
         
         if Dgm1.size == 0:
@@ -358,7 +358,7 @@ for k in range(100):
         #----------------------------------------------------------------
 
         
-        
+            
         
         D0 = pc.Diagram(Dgm =Dgm0, globalmaxdeath = None, infinitedeath=None, inf_policy="keep")
         D1 = pc.Diagram(Dgm = Dgm1, globalmaxdeath = None, infinitedeath= None, inf_policy="keep")
@@ -383,9 +383,9 @@ for k in range(100):
         
         
         
-        PC = np.hstack((G0,L0,G1,L1))   #Each row is a sample curve
+        
         #PC = G0
-        #PC = np.hstack((G0,L0))
+        PC = np.concatenate((G0,L0,G1,L1),axis = None)
         Pcurves.append(PC)  #Turns for loop into a long vector
         
         
@@ -404,25 +404,25 @@ for k in range(100):
         
         #Remember the above script only needs to be done on the first run 
         #--------------------------------------------------------------------
-
+        '''
         
 
 
-        '''
+        
 
 
         y = y+s  #as long as our pixel does not pass the edge, we will continue
         #the stride 
         column_count= column_count+1
 
-        if y+w > m :
-            y=0
+        if y+w > m-21 :
+            y=21
             x = x +s
         row_count = row_count+1
                 # Once our pixel is passed the edge, we will reset 
                 #our horizontal pixel but add a stride down
 
-        if x+h >= n:
+        if x+h >= n-21:
 
 
             break
@@ -440,13 +440,13 @@ for k in range(100):
         
         #This must be uncommented AFTER running once to get data saved
         
-
             
+                 
         Diskmask = IM[x:x+h,y:y+h]
 
         for u in range(w):
             for v in range(h):
-                if CL[i] == 0 and (u-((h-1)/2))**2 + (v-((w-1)/2))**2 <= 100:
+                if CL[i] == 1 and (u-((h-1)/2))**2 + (v-((w-1)/2))**2 <= 100:
                         Diskmask[u,v] = 255
 
         IM[x:x+h,y:y+h] = Diskmask
@@ -471,8 +471,8 @@ for k in range(100):
         #This is was initially for agglomerative method
         #consisting of more than 2 clusters.  Ignore completely.
          
-        '''
-
+        '''       
+        
         elif CL[j] == 2:
         
             colorimage[x,y] = c2
@@ -485,12 +485,12 @@ for k in range(100):
         
         elif CL[j] == 5:
             colorimage[x,y] = c6
-        '''
+        
     
         #-------------------------------------------------------------------------
 
 
-
+        '''
 
 
 
@@ -512,6 +512,7 @@ for k in range(100):
     
     #print("size of All PC  DATA:",Pcurves)
 
+    
     #scaler = MinMaxScaler()   #build Scaler model determining min max to be default: [0,1]
     #scaler.fit(Pcurves)  #fits the data into the model
     #Pcurves = scaler.transform(Pcurves) #transform the scaled data based on our min max values
@@ -534,16 +535,18 @@ for k in range(100):
     #This is for the mask and its pixel array
     #Be sure to run this AFTER the first run
     
-    
+     
     fig = plt.figure()    
     plt.imshow(IM,cmap= 'gray')
     #plt.show()
-    fig.savefig(results_dir + "/diskmask0.png")
+    fig.savefig(results_dir + "/s3diskmask1.png")
 
-    np.savez(results_dir +"/diskArr0", IM)
-    
+    np.savez(results_dir +"/s3diskArr1", IM)
+
     
     
     #print(clustering.labels_)
     #print(np.unique(clustering.labels_)) #number of distinctive clusters
     print("count:", k)
+    #end = time.time()
+    #print(end-start)

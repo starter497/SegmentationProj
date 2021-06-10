@@ -24,16 +24,16 @@ import persistencecurves as pc # vectorization
 
 import warnings
 
-from sklearn.cluster import AgglomerativeClustering
-from sklearn.cluster import AffinityPropagation 
 from sklearn.cluster import KMeans
-from sklearn.cluster import SpectralClustering
 from sklearn.preprocessing import MinMaxScaler
 
 warnings.filterwarnings("ignore")
 
 usetex = matplotlib.checkdep_usetex(True) #I dont have latex)
 import time 
+
+
+
 # -------------------- README ----------------------
 '''
 
@@ -67,7 +67,7 @@ pixels for the windows respecively during the while loop process.
 
 Be sure to uncomment any CL notation in the code. You
 should also uncomment the plot figures given at the very end of the code.
-You may any saving procedure.
+You may check any saving procedure.
 
 '''
 
@@ -83,7 +83,7 @@ def disk_window(window):
             if (i-((h-1)/2))**2 + (j-((w-1)/2))**2 <= 100:
                 diskwindow[i,j] = window[i,j]
             else:
-                diskwindow[i,j] = 256  #Need these values to not exist in Persistent homology
+                diskwindow[i,j] = float('inf')  #Need these values to not exist in Persistent homology
 
     return diskwindow
 
@@ -96,7 +96,7 @@ def disk_window(window):
 #---------------------Window function -----------------
 
 
-def fractional_lifespancurve(image, height, width , pixel):
+def Persistence_windows(image, height, width , pixel):
     """ Returns a window (needs height h, weight w)
     based on input dimensions and pixel location
 
@@ -145,7 +145,7 @@ def fractional_lifespancurve(image, height, width , pixel):
                 #add values.  Hence the "or" case would be zeroed out 
                 #regardless.
 
-                window[i-x,j-y] = 256
+                window[i-x,j-y] = float('inf')
             else:
                 window[i-x,j-y] = image[i,j] #padding out of bounds entry with 256s
     test = window
@@ -222,13 +222,15 @@ c1=(255,255,255,255) #white
 Arrays = []
 
 #start = time.time()
-for k in range(100):
+for k in range(1):
 
     #plt.clf()
 
     im = []
     PC = []
     Pcurves = []
+    IM1 = []
+
 
     x = 21
     y = 21
@@ -238,7 +240,7 @@ for k in range(100):
 
     h = 21 #height    
     w = 21 #width
-    s = 3 #stride
+    s = 5 #stride
 
 
     
@@ -268,6 +270,20 @@ for k in range(100):
     
     n,m = im.shape
 
+    #Standardization
+
+    
+    mean = np.average(im)
+    std_dev = np.std(im)
+    im = (im- mean)/(std_dev)
+
+
+    new_min = np.min(im)
+    new_max = np.max(im)
+
+
+    '''
+    #MinMax Normalization
     min_value = np.min(im)  
     max_value = np.max(im)
 
@@ -277,11 +293,12 @@ for k in range(100):
     
     im = ((im-min_value)*((new_max - new_min)/(max_value-min_value)))+(new_min)
         #normalization values within [0,1]
+    '''
     
 
     '''
     note the original value possible is still only 255 and the new max is 3.  Meaning once we retrieve our windows, 
-    all pixel intensity will range in [-3,3] except for padded entries being 256
+    all pixel intensity will range in [1,0] except for padded entries being inf
     '''
 
 
@@ -291,18 +308,18 @@ for k in range(100):
 
     IM = ImageOps.grayscale(IM)
     IM = np.array(IM)
-
+    IM1 = IM
     #IM = IM.convert("RGBA")
    #colorimage = np.array(IM)
     
     for p in range(n):
         for q in range(m):
             IM[p,q] = 0 #turns all images to a black canvas
-
+            IM1[p,q] = 0
 
 
     
-
+    
     #------------------------ STRIDE process -------------------------------
 
     '''
@@ -332,9 +349,9 @@ for k in range(100):
        
         #This procedure only needs to be done once.
         #Afterwards feel free to comment it out
-        
-        '''            
-        [Dgm0,Dgm1,fraction_image]= fractional_lifespancurve(im, h, w , pixel)
+        '''    
+            
+        [Dgm0,Dgm1,fraction_image]= Persistence_windows(im, h, w , pixel)
         
         if Dgm1.size == 0:
             Dgm1 = np.zeros((2,2))
@@ -384,28 +401,17 @@ for k in range(100):
         
         
         
-        #PC = G0
+        
         PC = np.concatenate((G0,L0,G1,L1),axis = None)
         Pcurves.append(PC)  #Turns for loop into a long vector
         
         
-     
-        #uncomment this if you want to save the betticurves for windows
-    
-        #plt.savefig(results_dir + "ID:" + ID +" x_"+str(x) + "y_" + str(y)+".png")
-        #print("betticurvearray:", dgm0)
-        #np.save(results_dir + ID + "x_" +str(x) + "y_" + str(y) , dgm0)
-
-
     
 
-        
-
-        
         #Remember the above script only needs to be done on the first run 
         #--------------------------------------------------------------------
-        '''
         
+        '''
 
 
         
@@ -441,61 +447,29 @@ for k in range(100):
         #This must be uncommented AFTER running once to get data saved
         
             
-                 
+                            
         Diskmask = IM[x:x+h,y:y+h]
+        Diskmask1 = IM1[x:x+h,y:y+h]
 
         for u in range(w):
             for v in range(h):
-                if CL[i] == 1 and (u-((h-1)/2))**2 + (v-((w-1)/2))**2 <= 100:
+                if CL[i] == 0 and (u-((h-1)/2))**2 + (v-((w-1)/2))**2 <= 100:
                         Diskmask[u,v] = 255
 
+        for u in range(w):
+            for v in range(h):
+                if CL[i] == 0 and (u-((h-1)/2))**2 + (v-((w-1)/2))**2 <= 100:
+                        Diskmask1[u,v] = 255
+
+        IM1[x:x+h,y:y+h] = Diskmask1
+
         IM[x:x+h,y:y+h] = Diskmask
-
-                        #This procedure ensures our final masking will only set values to 255 (white) if they are within a disk
-                        #of the windows belonging to cluster 0 or 1 appropriately
-
-        #if CL[i] == 0 :
-            
-            #IM[x:x+h,y:y+h] = 255
-                #comment out the either cluster 0 or 1 depending on our mask
         
-        #if CL[i] == 0:
-
-            #IM[x:x+h,y:y+h] = 255  #all values in the window will be white
-
-
-    
-
-        #---------------------------------------------------------
-
-        #This is was initially for agglomerative method
-        #consisting of more than 2 clusters.  Ignore completely.
-         
-        '''       
         
-        elif CL[j] == 2:
+
+                        
+
         
-            colorimage[x,y] = c2
-        
-        elif CL[j] == 3:
-            colorimage[x,y] = c3
-        
-        elif CL[j] == 4:
-            colorimage[x,y] = c4
-        
-        elif CL[j] == 5:
-            colorimage[x,y] = c6
-        
-    
-        #-------------------------------------------------------------------------
-
-
-        '''
-
-
-
-
-
 
 
     #---------------  Can comment after first run -------------
@@ -512,18 +486,25 @@ for k in range(100):
     
     #print("size of All PC  DATA:",Pcurves)
 
-    
-    #scaler = MinMaxScaler()   #build Scaler model determining min max to be default: [0,1]
-    #scaler.fit(Pcurves)  #fits the data into the model
-    #Pcurves = scaler.transform(Pcurves) #transform the scaled data based on our min max values
-    #clustering = KMeans(n_clusters=2,random_state=0).fit(Pcurves)
-    
+    '''
+    #Dont worry about this. This is me testing if I need to build a model first for norm values.
+
+    scaler = MinMaxScaler()   #build Scaler model determining min max to be default: [0,1]
+    scaler.fit(Pcurves)  #fits the data into the model
+    Pcurves = scaler.transform(Pcurves) #transform the scaled data based on our min max values
+    '''
 
 
-    #clustering = AgglomerativeClustering(n_clusters= None,distance_threshold = 1500).fit(BettiArrays)
 
-    #np.savez( results_dir  + "/clusteringlabels", clustering.labels_)
-    
+
+    ''' 
+    #This is important to run on the first run to retrieve cluster labels
+
+    clustering = KMeans(n_clusters=2,random_state=0).fit(Pcurves)
+
+    np.savez( results_dir  + "/clusteringlabels", clustering.labels_)
+
+    '''
     
 
 
@@ -535,18 +516,24 @@ for k in range(100):
     #This is for the mask and its pixel array
     #Be sure to run this AFTER the first run
     
-     
-    fig = plt.figure()    
+    
+    fig0 = plt.figure()    
     plt.imshow(IM,cmap= 'gray')
     #plt.show()
-    fig.savefig(results_dir + "/s3diskmask1.png")
+    fig0.savefig(results_dir + "/s3diskmask0.png")
+    np.savez(results_dir +"/s3diskArr0", IM)
+    
+    
 
-    np.savez(results_dir +"/s3diskArr1", IM)
-
+    fig1 = plt.figure()
+    plt.imshow(IM1,cmap = 'gray')
+    fig1.savefig(results_dir + "/s3diskmask1.png")
+    np.savez(results_dir + "/s3diskArr1",IM1)
     
     
     #print(clustering.labels_)
     #print(np.unique(clustering.labels_)) #number of distinctive clusters
+    
     print("count:", k)
     #end = time.time()
-    #print(end-start)
+    #print(end-start)   

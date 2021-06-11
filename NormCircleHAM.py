@@ -8,8 +8,6 @@ Created on March 20th
 
 import os
 
-#import pandas as pd
-
 import numpy as np
 
 import gudhi  #create complexes
@@ -30,6 +28,7 @@ from sklearn.preprocessing import MinMaxScaler
 warnings.filterwarnings("ignore")
 
 usetex = matplotlib.checkdep_usetex(True) #I dont have latex)
+
 import time 
 
 
@@ -145,7 +144,7 @@ def Persistence_windows(image, height, width , pixel):
                 #add values.  Hence the "or" case would be zeroed out 
                 #regardless.
 
-                window[i-x,j-y] = float('inf')
+                window[i-x,j-y]= float('inf')
             else:
                 window[i-x,j-y] = image[i,j] #padding out of bounds entry with 256s
     test = window
@@ -180,37 +179,6 @@ def Persistence_windows(image, height, width , pixel):
 path = r"/home/nem2/Documents/HAM/HAM10000_images/"
 
 
-'''
-
-#This was the procedure used for a single image.
-
-results_dir = os.path.dirname(__file__)
-
-results_dir = os.path.join(results_dir, ID + 'Betticurves/')
-
-if not os.path.isdir(results_dir):
-
-    os.makedirs(results_dir)
-#Creates a file directory depending on ID of image (useful for saving images)
-
-
-
-im = []
-Im = Image.open(path + ID +".jpg")
-im = ImageOps.grayscale(Im)
-im = np.array(im)
-
-
-Im = Im.convert("RGBA")
-colorimage= np.array(Im)
-
-
-CL =np.load("clusteringlabels.npz")
-CL = CL.f.arr_0  #turns dictionary to readable array
-'''
-
-
-
 HAM_filenames = os.listdir(path)
 
 print(len(HAM_filenames))
@@ -222,7 +190,7 @@ c1=(255,255,255,255) #white
 Arrays = []
 
 #start = time.time()
-for k in range(1):
+for k in range(100):
 
     #plt.clf()
 
@@ -240,7 +208,7 @@ for k in range(1):
 
     h = 21 #height    
     w = 21 #width
-    s = 5 #stride
+    s = 3 #stride
 
 
     
@@ -253,10 +221,10 @@ for k in range(1):
 
         #creates the directory for each image with named ID-pc 
     
-    
+    ''' 
     CL =np.load(r"/home/nem2/Documents/HAM/" + ID  + "-pc/clusteringlabels.npz")
     CL = CL.f.arr_0  #turns dictionary to readable array
-    
+    '''
         #loads our array in npz format to a readable array. 
         #Must be commented out initially until labels from clustering
         #have been saved
@@ -278,10 +246,20 @@ for k in range(1):
     im = (im- mean)/(std_dev)
 
 
-    new_min = np.min(im)
-    new_max = np.max(im)
+    
+
+    
+        
+    im = np.where(im > 3, 3, im)
+    im = np.where(im <-3, -3, im)
 
 
+    new_min = -3
+    new_max = 3
+
+
+    print("im min", np.min(im))    
+    print("im max", np.max(im))
     '''
     #MinMax Normalization
     min_value = np.min(im)  
@@ -293,11 +271,11 @@ for k in range(1):
     
     im = ((im-min_value)*((new_max - new_min)/(max_value-min_value)))+(new_min)
         #normalization values within [0,1]
-    '''
     
-
+    
     '''
-    note the original value possible is still only 255 and the new max is 3.  Meaning once we retrieve our windows, 
+    '''
+    note the original value possible is still only 255 and the new max is 1.  Meaning once we retrieve our windows, 
     all pixel intensity will range in [1,0] except for padded entries being inf
     '''
 
@@ -306,9 +284,9 @@ for k in range(1):
 
     #print("array:",im)
 
-    IM = ImageOps.grayscale(IM)
-    IM = np.array(IM)
-    IM1 = IM
+    IMgray = ImageOps.grayscale(IM)
+    IM = np.array(IMgray)
+    IM1 = np.array(IMgray)
     #IM = IM.convert("RGBA")
    #colorimage = np.array(IM)
     
@@ -349,8 +327,8 @@ for k in range(1):
        
         #This procedure only needs to be done once.
         #Afterwards feel free to comment it out
-        '''    
-            
+                   
+                               
         [Dgm0,Dgm1,fraction_image]= Persistence_windows(im, h, w , pixel)
         
         if Dgm1.size == 0:
@@ -377,17 +355,17 @@ for k in range(1):
         
             
         
-        D0 = pc.Diagram(Dgm =Dgm0, globalmaxdeath = None, infinitedeath=None, inf_policy="keep")
+        D0 = pc.Diagram(Dgm = Dgm0, globalmaxdeath = None, infinitedeath=None, inf_policy="keep")
         D1 = pc.Diagram(Dgm = Dgm1, globalmaxdeath = None, infinitedeath= None, inf_policy="keep")
             #Using the persistent diagram information for curve summaries
 
 
 
-        G0 = D0.gaussian_Betti(meshstart= new_min,meshstop=new_max,num_in_mesh=300, spread=1)
-        G1 = D1.gaussian_Betti(meshstart=new_min,meshstop=new_max,num_in_mesh=300, spread=1)
+        G0 = D0.gaussian_Betti(meshstart= new_min,meshstop= new_max,num_in_mesh=300, spread=1)
+        G1 = D1.gaussian_Betti(meshstart= new_min,meshstop= new_max,num_in_mesh=300, spread=1)
         
         L0 = D0.normalizedlifecurve(new_min,new_max,300)
-        L1= D1.normalizedlifecurve(new_min,new_max,300)
+        L1 = D1.normalizedlifecurve(new_min,new_max,300)
 
         
         L0[np.any(np.isnan(L0)) == True] = new_min 
@@ -411,11 +389,11 @@ for k in range(1):
         #Remember the above script only needs to be done on the first run 
         #--------------------------------------------------------------------
         
-        '''
-
-
+        
         
 
+        
+        
 
         y = y+s  #as long as our pixel does not pass the edge, we will continue
         #the stride 
@@ -445,9 +423,9 @@ for k in range(1):
                    
         
         #This must be uncommented AFTER running once to get data saved
-        
             
-                            
+            
+        '''                  
         Diskmask = IM[x:x+h,y:y+h]
         Diskmask1 = IM1[x:x+h,y:y+h]
 
@@ -458,19 +436,19 @@ for k in range(1):
 
         for u in range(w):
             for v in range(h):
-                if CL[i] == 0 and (u-((h-1)/2))**2 + (v-((w-1)/2))**2 <= 100:
+                if CL[i] == 1 and (u-((h-1)/2))**2 + (v-((w-1)/2))**2 <= 100:
                         Diskmask1[u,v] = 255
 
-        IM1[x:x+h,y:y+h] = Diskmask1
-
+    
         IM[x:x+h,y:y+h] = Diskmask
         
+        IM1[x:x+h,y:y+h] = Diskmask1
+        '''
         
-
-                        
+                 
 
         
-
+        
 
     #---------------  Can comment after first run -------------
 
@@ -488,7 +466,7 @@ for k in range(1):
 
     '''
     #Dont worry about this. This is me testing if I need to build a model first for norm values.
-
+    
     scaler = MinMaxScaler()   #build Scaler model determining min max to be default: [0,1]
     scaler.fit(Pcurves)  #fits the data into the model
     Pcurves = scaler.transform(Pcurves) #transform the scaled data based on our min max values
@@ -496,15 +474,15 @@ for k in range(1):
 
 
 
-
-    ''' 
+    
+    
     #This is important to run on the first run to retrieve cluster labels
-
+    
     clustering = KMeans(n_clusters=2,random_state=0).fit(Pcurves)
 
     np.savez( results_dir  + "/clusteringlabels", clustering.labels_)
+    
 
-    '''
     
 
 
@@ -517,22 +495,25 @@ for k in range(1):
     #Be sure to run this AFTER the first run
     
     
-    fig0 = plt.figure()    
+    ''' 
+    fig = plt.figure()    
     plt.imshow(IM,cmap= 'gray')
     #plt.show()
-    fig0.savefig(results_dir + "/s3diskmask0.png")
-    np.savez(results_dir +"/s3diskArr0", IM)
+    fig.savefig(results_dir + "/s3diskmask0.png")
+    np.savez(results_dir +"/s3diskArr0", IM) 
     
-    
+    plt.clf()
 
     fig1 = plt.figure()
     plt.imshow(IM1,cmap = 'gray')
     fig1.savefig(results_dir + "/s3diskmask1.png")
     np.savez(results_dir + "/s3diskArr1",IM1)
+    '''
+
     
+    print(clustering.labels_)
+    print(np.unique(clustering.labels_)) #number of distinctive clusters
     
-    #print(clustering.labels_)
-    #print(np.unique(clustering.labels_)) #number of distinctive clusters
     
     print("count:", k)
     #end = time.time()

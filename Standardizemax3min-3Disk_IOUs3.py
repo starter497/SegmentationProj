@@ -24,7 +24,7 @@ usetex = matplotlib.checkdep_usetex(True) #I dont have latex)
 
 path1 =  r"/home/nem2/Documents/HAM/HAM10000_segmentations_lesion_tschandl/" 
 
-path2 = r"/home/nem2/Documents/HAM/StandardizeDiskIDs3-pc/"
+path2 = r"/home/nem2/Documents/HAM/Standardizemax3min-3DiskIDs3-pc/"
 
 path3 = r"/home/nem2/Documents/HAM/HAM10000_images/"
 
@@ -227,8 +227,8 @@ for j in range(len(humanmaskfiles)):
             #print("IOU score M1", IOU_score_M1)
 
 
-            if IOU_score_M0 < IOU_score_M1:
-                IOU_score_M0 = IOU_score_M1
+            #if IOU_score_M0 < IOU_score_M1:
+                #IOU_score_M0 = IOU_score_M1
 
             #print("IOU score M0", IOU_score_M0)
             
@@ -261,11 +261,11 @@ print("IOU A scores:", IOU_A)
 
 IOU_AVGM2 = sum(IOU_totalM2)/len(IOU_totalM2)
 
-IOU_AVGM0 = sum(IOU_totalM0)/len(IOU_totalM0)
+#IOU_AVGM0 = sum(IOU_totalM0)/len(IOU_totalM0)
 
 #print("IOU AVERAGE:", IOU_AVG)
 print("IOU_M2 AVERAGE:", IOU_AVGM2)
 
-print("IOU_M0 AVERAGE:", IOU_AVGM0)
+#print("IOU_M0 AVERAGE:", IOU_AVGM0)
 #np.savetxt(r"/home/nem2/Documents/HAM/IOU_AVG", np.array(IOU_AVG))
 
